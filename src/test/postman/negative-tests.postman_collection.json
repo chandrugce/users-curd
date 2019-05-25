@@ -1,0 +1,336 @@
+{
+	"info": {
+		"_postman_id": "41ab5fb3-e7a3-4d86-a68b-4cba100622c1",
+		"name": "negative-tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "create user (SETUP)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "98b2ed0c-3283-43aa-bd00-8cd0a01a7491",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"uid\", jsonData.userId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"test@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}",
+					"host": [
+						"{{baseurl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user (First Name missing)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "98b2ed0c-3283-43aa-bd00-8cd0a01a7491",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"uid\", jsonData.userId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"test@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}",
+					"host": [
+						"{{baseurl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user (DOB in futrue)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "98b2ed0c-3283-43aa-bd00-8cd0a01a7491",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"uid\", jsonData.userId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"test@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-3999\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}",
+					"host": [
+						"{{baseurl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user (Already created)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "98b2ed0c-3283-43aa-bd00-8cd0a01a7491",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"uid\", jsonData.userId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"test@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}",
+					"host": [
+						"{{baseurl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users with birthday from current month",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{baseurl}}/dob/current-month",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"dob",
+						"current-month"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete user (user not found)",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{baseurl}}/invalid",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"invalid"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "98b2ed0c-3283-43aa-bd00-8cd0a01a7491",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"{{$guid}}@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}",
+					"host": [
+						"{{baseurl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update DOB and/or pincode (DOB in future)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"pinCode\" : 12349998,\r\n\"birthDate\" : \"02-JUN-2999\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}/{{uid}}",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"{{uid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update DOB and/or pincode (invalid pin)",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"pinCode\" : \"invalid\",\r\n\"birthDate\" : \"02-JUN-1999\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}/{{uid}}",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"{{uid}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "54ff975b-0d74-402d-88d3-9b956ed5090f",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "a4e65572-b598-4bdc-82bb-087233ac7800",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

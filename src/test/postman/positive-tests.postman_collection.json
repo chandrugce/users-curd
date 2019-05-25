@@ -1,0 +1,205 @@
+{
+	"info": {
+		"_postman_id": "902d0d9d-957e-4d18-a64e-b5c4d3f252fa",
+		"name": "positive-tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "create user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "98b2ed0c-3283-43aa-bd00-8cd0a01a7491",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"uid\", jsonData.userId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"{{$guid}}@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}",
+					"host": [
+						"{{baseurl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users with birthday from current month",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John1\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"chandr1s1234@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}/dob/current-month",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"dob",
+						"current-month"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete user",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{baseurl}}/{{uid}}",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"{{uid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "98b2ed0c-3283-43aa-bd00-8cd0a01a7491",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"{{$guid}}@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}",
+					"host": [
+						"{{baseurl}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update DOB and/or pincode",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"pinCode\" : 12349998,\r\n\"birthDate\" : \"02-JUN-1999\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}/{{uid}}",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"{{uid}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get count of distinct mob",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"fName\" : \"John1\",\r\n\"lName\" : \"Smith\",\r\n\"email\" : \"chandr1s1234@gmail.com\",\r\n\"pinCode\" : 123456,\r\n\"birthDate\" : \"23-MAY-1980\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseurl}}/dob/month/distinct-count",
+					"host": [
+						"{{baseurl}}"
+					],
+					"path": [
+						"dob",
+						"month",
+						"distinct-count"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
