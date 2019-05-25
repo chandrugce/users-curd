@@ -437,6 +437,7 @@ public class UserControllerTests {
         assertEquals(2, response.getBody().size());
         for (UserModel request : response.getBody()) {
             TestCase.assertEquals("test@domain.com", request.getEmail());
+            TestCase.assertNotNull(request.getUserId());
         }
     }
 
