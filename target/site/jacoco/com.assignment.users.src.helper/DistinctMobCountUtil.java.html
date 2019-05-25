@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DistinctMobCountUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">users-src</a> &gt; <a href="index.source.html" class="el_package">com.assignment.users.src.helper</a> &gt; <span class="el_source">DistinctMobCountUtil.java</span></div><h1>DistinctMobCountUtil.java</h1><pre class="source lang-java linenums">package com.assignment.users.src.helper;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+<span class="fc" id="L7">public class DistinctMobCountUtil {</span>
+
+    public static Map&lt;String, Integer&gt; parse(List&lt;Map&gt; results) {
+<span class="fc" id="L10">        Map&lt;Integer, Integer&gt; serialized = serialize(results);</span>
+<span class="fc" id="L11">        Map&lt;String, Integer&gt; parsedResults = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L12" title="All 2 branches covered.">        for (int i = 1; i &lt;= 12; i++) {</span>
+<span class="fc" id="L13">            parsedResults.put(MonthEnum.resolveToLiteral(i), serialized.getOrDefault(i, 0));</span>
+        }
+<span class="fc" id="L15">        return parsedResults;</span>
+    }
+
+    private static Map&lt;Integer, Integer&gt; serialize(List&lt;Map&gt; results) {
+<span class="fc" id="L19">        Map&lt;Integer, Integer&gt; serialized = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">        for (Map result : results) {</span>
+<span class="fc" id="L21">            Integer mob = (Integer) result.getOrDefault(&quot;_id&quot;, 0);</span>
+<span class="fc" id="L22">            Integer count = (Integer) result.getOrDefault(&quot;count&quot;, 0);</span>
+<span class="fc" id="L23">            serialized.put(mob, count);</span>
+<span class="fc" id="L24">        }</span>
+<span class="fc" id="L25">        return serialized;</span>
+    }
+
+
+<span class="fc" id="L29">    public enum MonthEnum {</span>
+
+<span class="fc" id="L31">        JAN(&quot;January&quot;, 1),</span>
+<span class="fc" id="L32">        FEB(&quot;February&quot;, 2),</span>
+<span class="fc" id="L33">        MAR(&quot;March&quot;, 3),</span>
+<span class="fc" id="L34">        APR(&quot;April&quot;, 4),</span>
+<span class="fc" id="L35">        MAY(&quot;May&quot;, 5),</span>
+<span class="fc" id="L36">        JUN(&quot;June&quot;, 6),</span>
+<span class="fc" id="L37">        JUL(&quot;July&quot;, 7),</span>
+<span class="fc" id="L38">        AUG(&quot;August&quot;, 8),</span>
+<span class="fc" id="L39">        SEP(&quot;September&quot;, 9),</span>
+<span class="fc" id="L40">        OCT(&quot;October&quot;, 10),</span>
+<span class="fc" id="L41">        NOV(&quot;November&quot;, 11),</span>
+<span class="fc" id="L42">        DEC(&quot;December&quot;, 12);</span>
+
+        private final String monthLiteral;
+        private final int monthNum;
+
+<span class="fc" id="L47">        MonthEnum(String monthLiteral, int monthNum) {</span>
+<span class="fc" id="L48">            this.monthLiteral = monthLiteral;</span>
+<span class="fc" id="L49">            this.monthNum = monthNum;</span>
+<span class="fc" id="L50">        }</span>
+
+        public static String resolveToLiteral(int num) {
+<span class="fc" id="L53">            MonthEnum[] values = values();</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            for (MonthEnum monthEnum : values) {</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">                if (monthEnum.monthNum == num) {</span>
+<span class="fc" id="L56">                    return monthEnum.monthLiteral;</span>
+                }
+            }
+<span class="fc" id="L59">            return null;</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>

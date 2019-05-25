@@ -1,0 +1,9 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+users-src,com.assignment.users.src.helper,DistinctMobCountUtil.MonthEnum,0,186,0,4,0,22,0,5,0,3
+users-src,com.assignment.users.src.helper,DistinctMobCountUtil,0,67,0,4,0,13,0,5,0,3
+users-src,com.assignment.users.src.controllers,UserController,0,646,2,44,0,117,2,35,0,14
+users-src,com.assignment.users.src.models,UserDocument,0,63,0,0,0,27,0,17,0,17
+users-src,com.assignment.users.src.models,UserModel,0,42,0,0,0,18,0,12,0,12
+users-src,com.assignment.users.src.models,ValidationError,0,21,0,0,0,8,0,4,0,4
+users-src,com.assignment.users.src.models,ServiceResponse,0,25,0,0,0,10,0,5,0,5
+users-src,com.assignment.users.src,UsersSrcApplication,0,8,0,0,0,3,0,2,0,2

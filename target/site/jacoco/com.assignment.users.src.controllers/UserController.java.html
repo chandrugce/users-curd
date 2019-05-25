@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">users-src</a> &gt; <a href="index.source.html" class="el_package">com.assignment.users.src.controllers</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.assignment.users.src.controllers;
+
+import com.assignment.users.src.helper.DistinctMobCountUtil;
+import com.assignment.users.src.models.UserModel;
+import com.assignment.users.src.models.ServiceResponse;
+import com.assignment.users.src.models.UserDocument;
+import com.assignment.users.src.models.ValidationError;
+import com.assignment.users.src.repo.UsersRepository;
+import com.mongodb.client.result.UpdateResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Field;
+import org.springframework.data.mongodb.core.aggregation.Fields;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import static com.assignment.users.src.models.UserDocument.*;
+import static java.lang.Integer.valueOf;
+import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.util.StringUtils.isEmpty;
+
+@SuppressWarnings(&quot;deprecation&quot;)
+@RestController(value = &quot;/users&quot;)
+public class UserController {
+
+    private final UsersRepository mongoRepo;
+    private final MongoTemplate mongoTemplate;
+
+    private static final String MEDIA_TYPE_APP_JSON = &quot;application/json&quot;;
+<span class="fc" id="L42">    private ThreadLocal&lt;SimpleDateFormat&gt; dateFormatThreadLocal = ThreadLocal.withInitial(() -&gt; new SimpleDateFormat(&quot;dd-MMM-yyyy&quot;));</span>
+
+    @Autowired
+<span class="fc" id="L45">    public UserController(UsersRepository repo, MongoTemplate mongoTemplate) {</span>
+<span class="fc" id="L46">        this.mongoRepo = repo;</span>
+<span class="fc" id="L47">        this.mongoTemplate = mongoTemplate;</span>
+<span class="fc" id="L48">    }</span>
+
+
+    @PostMapping(consumes = MEDIA_TYPE_APP_JSON, produces = MEDIA_TYPE_APP_JSON)
+    public ResponseEntity&lt;ServiceResponse&gt; createUser(@RequestBody UserModel request) throws Exception {
+
+<span class="fc" id="L54">        List&lt;ValidationError&gt; validationErrors = validateRequest(request);</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        if (validationErrors.size() &gt; 0) {</span>
+<span class="fc" id="L56">            ServiceResponse response = new ServiceResponse(&quot;Invalid Request&quot;, null, validationErrors);</span>
+<span class="fc" id="L57">            return new ResponseEntity&lt;&gt;(response, BAD_REQUEST);</span>
+        }
+
+<span class="fc" id="L60">        UserDocument document = new UserDocument();</span>
+<span class="fc" id="L61">        document.setDob(request.getBirthDate());</span>
+<span class="fc" id="L62">        document.setEmail(request.getEmail().toLowerCase()); //normalize email to lowercase</span>
+<span class="fc" id="L63">        document.setFirst(request.getfName());</span>
+<span class="fc" id="L64">        document.setLast(request.getlName());</span>
+<span class="fc" id="L65">        document.setPin(valueOf(request.getPinCode()));</span>
+<span class="fc" id="L66">        document.setUid(randomUUID().toString());</span>
+<span class="fc" id="L67">        document.setMob(dateFormatThreadLocal.get().parse(request.getBirthDate()).getMonth() + 1);</span>
+<span class="fc" id="L68">        document.setAct(true);</span>
+
+        UserDocument inserted;
+        try {
+<span class="fc" id="L72">            inserted = mongoRepo.insert(document);</span>
+<span class="fc" id="L73">        } catch (DuplicateKeyException dupeEx) {</span>
+<span class="fc" id="L74">            ServiceResponse response = new ServiceResponse(&quot;User already exists&quot;, &quot;&quot;, Collections.emptyList());</span>
+<span class="fc" id="L75">            return new ResponseEntity&lt;&gt;(response, PRECONDITION_FAILED);</span>
+<span class="fc" id="L76">        } catch (Exception e) {</span>
+<span class="fc" id="L77">            ServiceResponse response = new ServiceResponse(&quot;Unexpected error, message:&quot; + e.getMessage(), &quot;&quot;, Collections.emptyList());</span>
+<span class="fc" id="L78">            return new ResponseEntity&lt;&gt;(response, INTERNAL_SERVER_ERROR);</span>
+<span class="fc" id="L79">        }</span>
+<span class="fc" id="L80">        ServiceResponse response = new ServiceResponse(&quot;success&quot;, inserted.getUid(), Collections.emptyList());</span>
+<span class="fc" id="L81">        return new ResponseEntity&lt;&gt;(response, CREATED);</span>
+    }
+
+    @PutMapping(value = &quot;/users/{uid}&quot;, consumes = MEDIA_TYPE_APP_JSON, produces = MEDIA_TYPE_APP_JSON)
+    public ResponseEntity&lt;ServiceResponse&gt; updateUser(@PathVariable(value = &quot;uid&quot;) String uid, @RequestBody UserModel request) throws Exception {
+
+<span class="fc" id="L87">        List&lt;ValidationError&gt; errors = validateUpdateRequest(uid, request);</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (errors.size() &gt; 0) {</span>
+<span class="fc" id="L89">            ServiceResponse response = new ServiceResponse(&quot;Invalid Request&quot;, null, errors);</span>
+<span class="fc" id="L90">            return new ResponseEntity&lt;&gt;(response, BAD_REQUEST);</span>
+        }
+
+<span class="fc" id="L93">        Query find = new Query(Criteria.where(UID).is(uid));</span>
+<span class="fc" id="L94">        Update update = new Update();</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (!isEmpty(request.getPinCode())) {</span>
+<span class="fc" id="L96">            update.set(PIN, valueOf(request.getPinCode()));</span>
+        }
+
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (!isEmpty(request.getBirthDate())) {</span>
+<span class="fc" id="L100">            update.set(DOB, request.getBirthDate());</span>
+<span class="fc" id="L101">            update.set(MOB, dateFormatThreadLocal.get().parse(request.getBirthDate()).getMonth() + 1);</span>
+        }
+
+<span class="fc" id="L104">        return updateAndGetResponse(uid, find, update);</span>
+    }
+
+    @DeleteMapping(value = &quot;/users/{uid}&quot;, produces = MEDIA_TYPE_APP_JSON)
+    public ResponseEntity&lt;ServiceResponse&gt; updateUserAsInactive(@PathVariable(value = &quot;uid&quot;) String uid) {
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (isEmpty(uid)) {</span>
+<span class="fc" id="L110">            ServiceResponse response = new ServiceResponse(&quot;Invalid Request&quot;, null,</span>
+<span class="fc" id="L111">                    singletonList(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;UserId&quot;, &quot;User is empty&quot;)));</span>
+<span class="fc" id="L112">            return new ResponseEntity&lt;&gt;(response, BAD_REQUEST);</span>
+        }
+
+<span class="fc" id="L115">        Query find = new Query(Criteria.where(UID).is(uid));</span>
+<span class="fc" id="L116">        Update update = new Update();</span>
+<span class="fc" id="L117">        update.set(ACT, false);</span>
+<span class="fc" id="L118">        return updateAndGetResponse(uid, find, update);</span>
+    }
+
+    @GetMapping(value = &quot;/users/dob/current-month&quot;, produces = MEDIA_TYPE_APP_JSON)
+    public ResponseEntity&lt;List&lt;UserModel&gt;&gt; getUsersByBirthDateInCurrentMonth() {
+<span class="fc" id="L123">        Query find = new Query(Criteria.where(MOB).is(new Date().getMonth() + 1));</span>
+<span class="fc" id="L124">        List&lt;UserDocument&gt; userDocuments = mongoTemplate.find(find, UserDocument.class);</span>
+<span class="fc" id="L125">        return new ResponseEntity&lt;&gt;(mapToCreateRequests(userDocuments), OK);</span>
+    }
+
+    @GetMapping(value = &quot;/users/dob/month/distinct-count&quot;, produces = MEDIA_TYPE_APP_JSON)
+    public ResponseEntity&lt;Map&lt;String, Integer&gt;&gt; getDistintCountByMob() {
+<span class="fc" id="L130">        Field field = Fields.field(MOB, &quot;mob&quot;);</span>
+
+<span class="fc" id="L132">        GroupOperation groupOp = new GroupOperation(Fields.from(field)).count().as(&quot;count&quot;);</span>
+<span class="fc" id="L133">        TypedAggregation aggregate = new TypedAggregation&lt;&gt;(UserDocument.class, groupOp);</span>
+<span class="fc" id="L134">        List&lt;Map&gt; results = mongoTemplate.aggregate(aggregate, Map.class).getMappedResults();</span>
+<span class="fc" id="L135">        Map&lt;String, Integer&gt; mobCountResults = DistinctMobCountUtil.parse(results);</span>
+
+<span class="fc" id="L137">        return new ResponseEntity&lt;&gt;(mobCountResults, OK);</span>
+    }
+
+    private List&lt;UserModel&gt; mapToCreateRequests(List&lt;UserDocument&gt; userDocuments) {
+<span class="fc" id="L141">        List&lt;UserModel&gt; requests = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L143">        userDocuments.stream().filter(UserDocument::isAct).forEach(doc -&gt; {</span>
+<span class="fc" id="L144">            UserModel request = new UserModel();</span>
+<span class="fc" id="L145">            request.setBirthDate(doc.getDob());</span>
+<span class="fc" id="L146">            request.setPinCode(String.valueOf(doc.getPin()));</span>
+<span class="fc" id="L147">            request.setEmail(doc.getEmail());</span>
+<span class="fc" id="L148">            request.setfName(doc.getFirst());</span>
+<span class="fc" id="L149">            request.setlName(doc.getLast());</span>
+<span class="fc" id="L150">            request.setUserId(doc.getUid());</span>
+<span class="fc" id="L151">            requests.add(request);</span>
+<span class="fc" id="L152">        });</span>
+
+<span class="fc" id="L154">        return requests;</span>
+    }
+
+    private ResponseEntity&lt;ServiceResponse&gt; updateAndGetResponse(@PathVariable(&quot;uid&quot;) String uid, Query find, Update update) {
+<span class="fc" id="L158">        UpdateResult updateResult = mongoTemplate.updateFirst(find, update, UserDocument.class);</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (updateResult.getMatchedCount() == 0) {</span>
+<span class="fc" id="L160">            ServiceResponse response = new ServiceResponse(&quot;userId not exists&quot;, uid, Collections.emptyList());</span>
+<span class="fc" id="L161">            return new ResponseEntity&lt;&gt;(response, NOT_FOUND);</span>
+        }
+
+<span class="fc" id="L164">        ServiceResponse response = new ServiceResponse(&quot;success&quot;, uid, Collections.emptyList());</span>
+<span class="fc" id="L165">        return new ResponseEntity&lt;&gt;(response, OK);</span>
+    }
+
+
+    private List&lt;ValidationError&gt; validateUpdateRequest(@PathVariable String uid, @RequestBody UserModel request) {
+<span class="fc" id="L170">        List&lt;ValidationError&gt; valError = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        if (isEmpty(uid)) {</span>
+<span class="fc" id="L172">            valError.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;userId&quot;, &quot;userId is empty&quot;));</span>
+        }
+
+<span class="fc bfc" id="L175" title="All 4 branches covered.">        if (isEmpty(request.getPinCode()) &amp;&amp; isEmpty(request.getBirthDate())) {</span>
+<span class="fc" id="L176">            valError.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;pinCode, birthDate&quot;, &quot;PinCode or DOB required for update&quot;));</span>
+        }
+
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (!isEmpty(request.getPinCode())) {</span>
+<span class="fc" id="L180">            validatePinCode(request, valError);</span>
+        }
+
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        if (!isEmpty(request.getBirthDate())) {</span>
+<span class="fc" id="L184">            validateDOB(request, valError);</span>
+        }
+<span class="fc" id="L186">        return valError;</span>
+    }
+
+    private List&lt;ValidationError&gt; validateRequest(UserModel request) {
+<span class="fc" id="L190">        List&lt;ValidationError&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        if (isEmpty(request.getfName())) {</span>
+<span class="fc" id="L192">            result.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;fName&quot;, &quot;First Name is empty&quot;));</span>
+        }
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">        if (isEmpty(request.getlName())) {</span>
+<span class="fc" id="L196">            result.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;lName&quot;, &quot;Last Name is empty&quot;));</span>
+        }
+
+<span class="fc bfc" id="L199" title="All 4 branches covered.">        if (isEmpty(request.getEmail()) || !request.getEmail().contains(&quot;@&quot;)) {</span>
+<span class="fc" id="L200">            result.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;email&quot;, &quot;Email is not valid&quot;));</span>
+        }
+
+<span class="fc" id="L203">        validatePinCode(request, result);</span>
+
+<span class="fc" id="L205">        validateDOB(request, result);</span>
+<span class="fc" id="L206">        return result;</span>
+
+    }
+
+    private void validateDOB(UserModel request, List&lt;ValidationError&gt; result) {
+<span class="fc" id="L211">        String birthDate = request.getBirthDate();</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (isEmpty(birthDate)) {</span>
+<span class="fc" id="L213">            result.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;birthDate&quot;, &quot;Date of birth should not be empty&quot;));</span>
+        }
+
+<span class="fc bfc" id="L216" title="All 2 branches covered.">        if (!isEmpty(birthDate)) {</span>
+<span class="fc" id="L217">            ValidationError dobValError = new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;birthDate&quot;, &quot;Date of birth is not valid&quot;);</span>
+            try {
+<span class="fc" id="L219">                Date dob = dateFormatThreadLocal.get().parse(birthDate);</span>
+<span class="fc bfc" id="L220" title="All 2 branches covered.">                if (dob.getYear() &gt; new Date().getYear()) {</span>
+<span class="fc" id="L221">                    result.add(dobValError);</span>
+                }
+<span class="pc bpc" id="L223" title="2 of 6 branches missed.">                if (!birthDate.contains(&quot;-&quot;) || birthDate.split(&quot;-&quot;).length != 3 || valueOf(birthDate.split(&quot;-&quot;)[0]) &gt; 31) {</span>
+<span class="fc" id="L224">                    result.add(dobValError);</span>
+                }
+<span class="fc" id="L226">            } catch (ParseException e) {</span>
+<span class="fc" id="L227">                result.add(dobValError);</span>
+<span class="fc" id="L228">            }</span>
+        }
+<span class="fc" id="L230">    }</span>
+
+    private void validatePinCode(UserModel request, List&lt;ValidationError&gt; result) {
+<span class="fc bfc" id="L233" title="All 2 branches covered.">        if (isEmpty(request.getPinCode())) {</span>
+<span class="fc" id="L234">            result.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;pinCode&quot;, &quot;Pin code is empty&quot;));</span>
+        }
+
+<span class="fc bfc" id="L237" title="All 2 branches covered.">        if (!isEmpty(request.getPinCode())) {</span>
+            try {
+<span class="fc" id="L239">                valueOf(request.getPinCode());</span>
+<span class="fc" id="L240">            } catch (Exception e) {</span>
+<span class="fc" id="L241">                result.add(new ValidationError(BAD_REQUEST.getReasonPhrase(), &quot;pinCode&quot;, &quot;Pin Code is not valid&quot;));</span>
+<span class="fc" id="L242">            }</span>
+        }
+<span class="fc" id="L244">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
